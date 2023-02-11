@@ -9,7 +9,7 @@ import (
 
 type CertificateFile struct {
 	Fullpath string
-	Certs    x509.Certificate
+	Cert    x509.Certificate
 }
 
 type CertsMetricsInfo struct {
@@ -25,8 +25,8 @@ func NewCertsMetricsInfo(cf CertificateFile) CertsMetricsInfo {
 	ci := CertsMetricsInfo{}
 	ci.FullPath = cf.Fullpath
 	ci.FileName = filepath.Base(cf.Fullpath)
-	ci.NotBefore = cf.Certs.NotBefore
-	ci.NotAfter = cf.Certs.NotAfter
+	ci.NotBefore = cf.Cert.NotBefore
+	ci.NotAfter = cf.Cert.NotAfter
 	ci.ValidPeriod = ci.NotAfter.Sub(ci.NotBefore)
 	t := util.TimeNow()
 	ci.RemainingValidPeriod = ci.NotAfter.Sub(t)
