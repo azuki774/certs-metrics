@@ -1,4 +1,4 @@
-module XXX
+module certs-metrics
 
 go 1.19
 

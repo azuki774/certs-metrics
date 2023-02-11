@@ -2,10 +2,8 @@ COLORIZE_PASS=sed ''/PASS/s//$$(printf "$(GREEN)PASS$(RESET)")/''
 COLORIZE_FAIL=sed ''/FAIL/s//$$(printf "$(RED)FAIL$(RESET)")/''
 SHELL=/bin/bash
 
-.PHONY: build bin bin-linux-amd64 test
-bin:
-	go build -a -tags "netgo" -installsuffix netgo  -ldflags="-s -w -extldflags \"-static\"" -o build/bin/ ./...
-	
+.PHONY: build bin-linux-amd64 test
+
 build:
 	go build -a -tags "netgo" -installsuffix netgo  -ldflags="-s -w -extldflags \"-static\"" -o build/bin/ ./...
 
