@@ -9,7 +9,35 @@ on:
       - "**"
 
 jobs:
-  build:
+  build_and_e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.19
+
+      - name: Build
+        run: go build -a -tags "netgo" -installsuffix netgo  -ldflags="-s -w -extldflags \"-static\"" -o build/bin/ ./...
+
+      - name: Run
+        run: ./build/bin/certs-metrics start test/testca.crt test/testca2.crt &
+
+      - name: install curl
+        run: sudo apt install curl
+
+      - name: get curl info
+        run: curl -v http://localhost:8334/metrics > output
+
+      - name: check output 1
+        run: grep 'cert_name="testca.crt"' output
+
+      - name: check output 2
+        run: grep 'cert_name="testca2.crt"' output
+
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -29,7 +57,3 @@ jobs:
 
       - name: Test
         run: go test -v ./...
-
-      - name: Build
-        run: go build -a -tags "netgo" -installsuffix netgo  -ldflags="-s -w -extldflags \"-static\"" -o build/bin/ ./...
-
