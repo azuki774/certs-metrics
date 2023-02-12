@@ -3,6 +3,7 @@ package metrics
 import (
 	"certs-metrics/internal/usecase"
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 type MetricsServer struct {
 	Logger *zap.Logger
 	Us     *usecase.Usecase
+	Port   string
 	Dirs   []string // ca.crt directory, for labeling
 }
 
@@ -79,7 +81,7 @@ func (s *MetricsServer) refresh(ctx context.Context, m *metrics) {
 }
 
 func (s *MetricsServer) Start(ctx context.Context) error {
-	s.Logger.Info("cert-metrics server start")
+	s.Logger.Info("cert-metrics server start", zap.String("port", s.Port))
 	// Create a non-global registry.
 	reg := prometheus.NewRegistry()
 
@@ -89,7 +91,7 @@ func (s *MetricsServer) Start(ctx context.Context) error {
 	go s.refresh(ctx, m)
 
 	http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
-	http.ListenAndServe(":8334", nil)
+	http.ListenAndServe(fmt.Sprintf(":%s", s.Port), nil)
 
 	return nil
 }

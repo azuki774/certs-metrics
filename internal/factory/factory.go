@@ -34,6 +34,6 @@ func NewUsecase(l *zap.Logger) (us *usecase.Usecase) {
 	return &usecase.Usecase{L: l, C: &repository.CertsLoader{}}
 }
 
-func NewMetricsServer(l *zap.Logger, us *usecase.Usecase, dirs []string) (ms *metrics.MetricsServer) {
-	return &metrics.MetricsServer{Logger: l, Us: us, Dirs: dirs}
+func NewMetricsServer(l *zap.Logger, us *usecase.Usecase, dirs []string, port string) (ms *metrics.MetricsServer) {
+	return &metrics.MetricsServer{Logger: l, Us: us, Dirs: dirs, Port: port}
 }

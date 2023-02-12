@@ -8,6 +8,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var startOpt startOption
+
+type startOption struct {
+	Port string
+}
+
 // startCmd represents the start command
 var startCmd = &cobra.Command{
 	Use:   "start",
@@ -30,7 +36,7 @@ to quickly create a Cobra application.`,
 
 		ctx := context.Background()
 		us := factory.NewUsecase(l)
-		ms := factory.NewMetricsServer(l, us, args)
+		ms := factory.NewMetricsServer(l, us, args, startOpt.Port)
 		err = ms.Start(ctx)
 		return err
 	},
@@ -38,14 +44,6 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(startCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// checkCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// checkCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	startCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	startCmd.Flags().StringVar(&startOpt.Port, "port", "8334", "listen port")
 }
