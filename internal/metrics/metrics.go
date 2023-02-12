@@ -3,7 +3,6 @@ package metrics
 import (
 	"certs-metrics/internal/usecase"
 	"context"
-	"math/rand"
 	"net/http"
 	"time"
 
@@ -15,34 +14,42 @@ import (
 type MetricsServer struct {
 	Logger *zap.Logger
 	Us     *usecase.Usecase
+	Dirs   []string // ca.crt directory, for labeling
 }
 
 type metrics struct {
-	dir                  string // ca.crt directory, for labeling
-	notBefore            prometheus.Gauge
-	notAfter             prometheus.Gauge
-	validPeriod          prometheus.Gauge
-	remainingValidPeriod prometheus.Gauge
+	notBefore            prometheus.GaugeVec
+	notAfter             prometheus.GaugeVec
+	validPeriod          prometheus.GaugeVec
+	remainingValidPeriod prometheus.GaugeVec
 }
 
 func NewMetrics(reg prometheus.Registerer) *metrics {
 	m := &metrics{
-		notBefore: prometheus.NewGauge(prometheus.GaugeOpts{
+		notBefore: *prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name: "cert_not_before",
-			Help: "",
-		}),
-		notAfter: prometheus.NewGauge(prometheus.GaugeOpts{
+			Help: "certification notBefore value (unixtime)",
+		},
+			[]string{"cert_name", "cert_full_path"},
+		),
+		notAfter: *prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name: "cert_not_after",
-			Help: "",
-		}),
-		validPeriod: prometheus.NewGauge(prometheus.GaugeOpts{
+			Help: "certification notAfter value (unixtime)",
+		},
+			[]string{"cert_name", "cert_full_path"},
+		),
+		validPeriod: *prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name: "cert_valid_period",
-			Help: "",
-		}),
-		remainingValidPeriod: prometheus.NewGauge(prometheus.GaugeOpts{
+			Help: "certification valid period (min)",
+		},
+			[]string{"cert_name", "cert_full_path"},
+		),
+		remainingValidPeriod: *prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name: "cert_remaining_valid_period",
-			Help: "",
-		}),
+			Help: "certification remaining valid period (min)",
+		},
+			[]string{"cert_name", "cert_full_path"},
+		),
 	}
 	reg.MustRegister(m.notBefore)
 	reg.MustRegister(m.notAfter)
@@ -51,16 +58,23 @@ func NewMetrics(reg prometheus.Registerer) *metrics {
 	return m
 }
 
-// 60 秒ごとに情報を更新
-func refresh(m *metrics) {
+// refresh: 60 秒ごとに情報を更新
+func (s *MetricsServer) refresh(ctx context.Context, m *metrics) {
 	for {
-		rand.Seed(time.Now().UnixNano())
-		n := -1 + rand.Float64()*2
-		m.notBefore.Set(n)
-		m.notAfter.Set(n)
-		m.validPeriod.Set(n)
-		m.remainingValidPeriod.Set(n)
-		time.Sleep(5 * time.Second)
+		cis, err := s.Us.LoadCertsInfo(s.Dirs)
+		if err != nil {
+			s.Logger.Error("fetch error", zap.Error(err))
+		}
+
+		for _, ci := range cis {
+			pl := prometheus.Labels{"cert_name": ci.FileName, "cert_full_path": ci.FullPath}
+
+			m.notBefore.With(pl).Set(float64(ci.NotBefore.Unix()))
+			m.notAfter.With(pl).Set(float64(ci.NotAfter.Unix()))
+			m.validPeriod.With(pl).Set(ci.ValidPeriod.Minutes())
+			m.remainingValidPeriod.With(pl).Set(ci.RemainingValidPeriod.Minutes())
+		}
+		time.Sleep(60 * time.Second)
 	}
 }
 
@@ -71,8 +85,8 @@ func (s *MetricsServer) Start(ctx context.Context) error {
 
 	// Create new metrics and register them using the custom registry.
 	m := NewMetrics(reg)
-	m.notBefore.Set(123.4)
-	go refresh(m)
+
+	go s.refresh(ctx, m)
 
 	http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
 	http.ListenAndServe(":8334", nil)

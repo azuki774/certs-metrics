@@ -30,7 +30,7 @@ to quickly create a Cobra application.`,
 
 		ctx := context.Background()
 		us := factory.NewUsecase(l)
-		ms := factory.NewMetricsServer(l, us)
+		ms := factory.NewMetricsServer(l, us, args)
 		err = ms.Start(ctx)
 		return err
 	},

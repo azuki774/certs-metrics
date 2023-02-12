@@ -28,10 +28,10 @@ func (u *Usecase) LoadCertsInfo(dirs []string) (cis []model.CertsMetricsInfo, er
 		} else {
 			// no error
 			cis = append(cis, ci)
-			ld.Info("load cert", zap.Time("notBefore", ci.NotBefore))
-			ld.Info("load cert", zap.Time("notAfter", ci.NotAfter))
-			ld.Info("load cert", zap.Duration("validPeriod", ci.ValidPeriod))
-			ld.Info("load cert", zap.Duration("remainingValidPeriod", ci.RemainingValidPeriod))
+			ld.Debug("load cert", zap.Time("notBefore", ci.NotBefore))
+			ld.Debug("load cert", zap.Time("notAfter", ci.NotAfter))
+			ld.Debug("load cert", zap.Duration("validPeriod", ci.ValidPeriod))
+			ld.Debug("load cert", zap.Duration("remainingValidPeriod", ci.RemainingValidPeriod))
 		}
 	}
 
