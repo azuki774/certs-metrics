@@ -4,6 +4,9 @@ import (
 	"certs-metrics/internal/factory"
 	"context"
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/spf13/cobra"
 )
@@ -34,9 +37,11 @@ to quickly create a Cobra application.`,
 			return fmt.Errorf("required a certication file")
 		}
 
-		ctx := context.Background()
 		us := factory.NewUsecase(l)
 		ms := factory.NewMetricsServer(l, us, args, startOpt.Port)
+
+		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+		defer stop()
 		err = ms.Start(ctx)
 		return err
 	},
