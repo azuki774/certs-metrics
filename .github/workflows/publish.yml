@@ -20,7 +20,7 @@ jobs:
         run: make bin-linux-amd64
 
       - name: prepare artifacts
-        run: tar -cvzf build/bin/cert-metrics.tar.gz build/bin/certs-metrics
+        run: cd build/bin && tar -cvzf certs-metrics.tar.gz certs-metrics
 
       - name: Create release
         id: create_release
@@ -45,5 +45,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_content_type: application/gzip
-          asset_path: build/bin/cert-metrics.tar.gz
-          asset_name: cert-metrics-amd64.tar.gz
+          asset_path: build/bin/certs-metrics.tar.gz
+          asset_name: certs-metrics-amd64.tar.gz
