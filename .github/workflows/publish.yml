@@ -1,0 +1,49 @@
+name: Build and Publish
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.19
+
+      - name: make bin-linux-amd64
+        run: make bin-linux-amd64
+
+      - name: prepare artifacts
+        run: tar -cvzf build/bin/cert-metrics.tar.gz build/bin/certs-metrics
+
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            Changes in this Release
+            - First Change
+            - Second Change
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        id: upload-release-asset-linux
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_content_type: application/gzip
+          asset_path: build/bin/cert-metrics.tar.gz
+          asset_name: cert-metrics-amd64.tar.gz
