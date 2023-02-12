@@ -4,7 +4,6 @@ import (
 	"certs-metrics/internal/model"
 	"crypto/x509"
 	"encoding/pem"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -14,8 +13,6 @@ type CertsLoader struct {
 }
 
 func (c *CertsLoader) Load(dir string) (cf model.CertificateFile, err error) {
-	p, _ := os.Getwd()
-	fmt.Println(p)
 	fullPath, err := filepath.Abs(dir)
 	if err != nil {
 		return model.CertificateFile{}, err

@@ -12,15 +12,15 @@ type CertsLoader interface {
 }
 
 type Usecase struct {
-	l *zap.Logger
-	c CertsLoader
+	L *zap.Logger // Logger
+	C CertsLoader // CertsLoader
 }
 
 // LoadCertsInfo uses 'check' commands
 func (u *Usecase) LoadCertsInfo(dirs []string) (cis []model.CertsMetricsInfo, err error) {
 	cis = []model.CertsMetricsInfo{}
 	for _, dir := range dirs {
-		ld := u.l.With(zap.String("dir", dir))
+		ld := u.L.With(zap.String("dir", dir))
 		ci, nerr := u.loadCertInfo(dir)
 		if nerr != nil {
 			err = multierr.Append(err, nerr)
@@ -39,7 +39,7 @@ func (u *Usecase) LoadCertsInfo(dirs []string) (cis []model.CertsMetricsInfo, er
 }
 
 func (u *Usecase) loadCertInfo(dir string) (ci model.CertsMetricsInfo, err error) {
-	cf, err := u.c.Load(dir)
+	cf, err := u.C.Load(dir)
 	if err != nil {
 		return model.CertsMetricsInfo{}, err
 	}
