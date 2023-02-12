@@ -1,6 +1,7 @@
 package factory
 
 import (
+	"certs-metrics/internal/metrics"
 	"certs-metrics/internal/repository"
 	"certs-metrics/internal/usecase"
 	"fmt"
@@ -31,4 +32,8 @@ func JSTTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 
 func NewUsecase(l *zap.Logger) (us *usecase.Usecase) {
 	return &usecase.Usecase{L: l, C: &repository.CertsLoader{}}
+}
+
+func NewMetricsServer(l *zap.Logger, us *usecase.Usecase) (ms *metrics.MetricsServer) {
+	return &metrics.MetricsServer{Logger: l, Us: us}
 }
