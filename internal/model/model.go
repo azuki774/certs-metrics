@@ -9,7 +9,7 @@ import (
 
 type CertificateFile struct {
 	Fullpath string
-	Cert    x509.Certificate
+	Cert     x509.Certificate
 }
 
 type CertsMetricsInfo struct {

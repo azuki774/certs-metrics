@@ -3,7 +3,7 @@ COLORIZE_FAIL=sed ''/FAIL/s//$$(printf "$(RED)FAIL$(RESET)")/''
 SHELL=/bin/bash
 TAG := $(shell git rev-parse HEAD)
 
-.PHONY: build bin-linux-amd64 test
+.PHONY: build bin-linux-amd64 test start
 
 build:
 	go build -a -tags "netgo" -installsuffix netgo -ldflags="-s -w -X main.version=$(TAG) -extldflags \"-static\"" -o build/bin/ ./...
@@ -16,3 +16,6 @@ test:
 	go vet -v ./...
 	staticcheck ./...
 	go test -v ./...  | $(COLORIZE_PASS) | $(COLORIZE_FAIL)
+
+start:
+	build/bin/certs-metrics start test/testca.crt test/testca2.crt
