@@ -31,8 +31,8 @@ func jSTTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 
 func TestUsecase_LoadCertsInfo(t *testing.T) {
 	type fields struct {
-		l *zap.Logger
-		c CertsLoader
+		L *zap.Logger
+		C CertsLoader
 	}
 	type args struct {
 		dirs []string
@@ -48,8 +48,8 @@ func TestUsecase_LoadCertsInfo(t *testing.T) {
 		{
 			name: "load ok",
 			fields: fields{
-				l: l,
-				c: &mockCertsLoader{},
+				L: l,
+				C: &mockCertsLoader{},
 			},
 			args: args{
 				dirs: []string{"test1.crt", "test2.crt"},
@@ -78,8 +78,8 @@ func TestUsecase_LoadCertsInfo(t *testing.T) {
 		{
 			name: "load ng",
 			fields: fields{
-				l: l,
-				c: &mockCertsLoader{err: fmt.Errorf("anything error")},
+				L: l,
+				C: &mockCertsLoader{err: fmt.Errorf("anything error")},
 			},
 			args: args{
 				dirs: []string{"test1.crt", "test2.crt"},
@@ -92,8 +92,8 @@ func TestUsecase_LoadCertsInfo(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &Usecase{
-				l: tt.fields.l,
-				c: tt.fields.c,
+				L: tt.fields.L,
+				C: tt.fields.C,
 			}
 			util.TimeNow = tt.nowTime.UTC
 			gotCis, err := u.LoadCertsInfo(tt.args.dirs)
